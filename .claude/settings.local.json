@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"from routers import pages; print\\(''OK''\\)\")",
+      "Bash(python -c \":*)"
+    ]
+  }
+}

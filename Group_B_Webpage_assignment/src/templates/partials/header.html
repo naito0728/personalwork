@@ -5,7 +5,9 @@
     }
 
     .site-header .l-container {
-        padding-left: 0;
+        padding-left: 16px;
+        max-width: 100%;
+        margin: 0;
     }
 
     .site-header__inner {
@@ -67,14 +69,12 @@
             <svg class="site-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 253">
                 <path fill="#e63200" d="M0 0 L119 0 L119 67 L42 127 L119 185 L119 252 L0 252 L0 185 L42 185 L42 67 L0 67 Z"/>
             </svg>
-            <a href="/"><span class="site-title">HumanCapitalStrategy System</span></a>
+            <a href="{{ url_for('read_dashboard') }}"><span class="site-title">AIキャリア成長支援システム</span></a>
         </div>
         <nav class="site-nav" aria-label="メインナビゲーション">
-            <a class="site-nav__link" href="{{ url_for('read_test') }}">Test</a>
-            <a class="site-nav__link" href="{{ url_for('read_chat') }}">Chat</a>
-            <a class="site-nav__link" href="{{ url_for('read_sample1') }}">Sample 1</a>
-            <a class="site-nav__link" href="{{ url_for('read_sample2') }}">Sample 2</a>
-            <a class="site-nav__link" href="{{ url_for('read_sample3') }}">Sample 3</a>
+            <a class="site-nav__link" href="{{ url_for('read_dashboard') }}">ダッシュボード</a>
+            <a class="site-nav__link" href="{{ url_for('read_chat') }}">AIキャリアアドバイザー</a>
+            <a class="site-nav__link" href="{{ url_for('read_roadmap') }}">ロードマップ</a>
         </nav>
     </div>
 </header>

@@ -14,7 +14,7 @@
     <div class="card-title">現在のロール</div>
     <div class="role-row">
       <div>
-        <div class="role-value" id="currentRoleDisplay">{{ user.current_role }}</div>
+        <div class="role-value" id="currentRoleDisplay">{{ user.current_role if user else '' }}</div>
         <span class="role-badge">Current Role</span>
       </div>
       <button class="btn btn-sm" onclick="openModal('modalCurrentRole')">変更</button>
@@ -26,7 +26,7 @@
     <div class="card-title">目標ロール</div>
     <div class="role-row">
       <div>
-        <div class="role-value" id="targetRoleDisplay">{{ user.target_role }}</div>
+        <div class="role-value" id="targetRoleDisplay">{{ user.target_role if user else '' }}</div>
         <span class="role-badge" style="background:#eaf4ff;color:#1a6fb5;border-color:#1a6fb5;">Target Role</span>
       </div>
       <button class="btn btn-sm" onclick="openModal('modalTargetRole')">変更</button>
@@ -272,6 +272,7 @@
 {# サーバーから渡された初期データをJS変数として埋め込む #}
 <script>
   window.__INIT_DATA__ = {
+    user_id:  {{ user.user_id if user else 1 }},
     skills:   {{ skills_json | safe }},
     careers:  {{ careers_json | safe }},
     trainings: {{ trainings_json | safe }}

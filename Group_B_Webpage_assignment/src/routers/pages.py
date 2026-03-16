@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload
@@ -11,7 +11,6 @@ import models
 router = APIRouter()
 
 # --- パスとテンプレート設定 ---
-# このルーターファイルからの相対パスでテンプレートディレクトリを解決します。
 BASE_DIR = Path(__file__).resolve().parent.parent
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
@@ -20,11 +19,26 @@ class Item(BaseModel):
     id: int
     name: str
 
+
+def get_current_user(request: Request, db: Session):
+    """セッションからログイン中のユーザーを取得。未ログインなら None を返す"""
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return None
+    return db.query(models.User).filter(models.User.user_id == user_id).first()
+
+
+@router.get("/", tags=["pages"])
+def index():
+    return RedirectResponse(url="/dashboard", status_code=302)
+
+
 @router.get("/chat", response_class=HTMLResponse, tags=["pages"])
 def read_chat(request: Request, db: Session = Depends(get_db)):
     """AIキャリアアドバイザー チャット画面"""
-    user_id = 1  # TODO: 認証から取得
-    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
     return templates.TemplateResponse("chat.html", {
         "request":     request,
         "active_page": "chat",
@@ -35,8 +49,9 @@ def read_chat(request: Request, db: Session = Depends(get_db)):
 @router.get("/roadmap", response_class=HTMLResponse, tags=["pages"])
 def read_roadmap(request: Request, db: Session = Depends(get_db)):
     """パーソナライズロードマップ画面"""
-    user_id = 1  # TODO: 認証から取得
-    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
     return templates.TemplateResponse("roadmap.html", {
         "request":     request,
         "active_page": "roadmap",
@@ -47,8 +62,10 @@ def read_roadmap(request: Request, db: Session = Depends(get_db)):
 @router.get("/dashboard", response_class=HTMLResponse, tags=["pages"])
 def read_dashboard(request: Request, db: Session = Depends(get_db)):
     """ダッシュボード画面"""
-    user_id = 1  # TODO: 認証から取得
-    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+    user_id = user.user_id
 
     user_skills = (
         db.query(models.UserSkill)

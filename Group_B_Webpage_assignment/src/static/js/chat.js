@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('fileInput').addEventListener('change', handleFileAttach);
   document.getElementById('roadmapBtn').addEventListener('click', generateAndOpenRoadmap);
   document.getElementById('careerBookBtn').addEventListener('click', () => {
-    window.open('/career-book', '_blank');
+    window.open('https://portal.brexa-tech.jp/career-portal/guide', '_blank');
   });
   document.getElementById('startNewChat').addEventListener('click', startNewChat);
   document.getElementById('newChatBtn').addEventListener('click', startNewChat);

@@ -3,7 +3,7 @@
    依存: common.js (openModal, closeModal)
    ========================================================== */
 
-const USER_ID = 1;
+const USER_ID = (window.__INIT_DATA__ || {}).user_id || 1;
 
 // ===== API ヘルパー =====
 async function apiFetch(url, method = 'GET', body = null) {

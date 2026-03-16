@@ -6,13 +6,14 @@ import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel as PydanticBase
 from dotenv import load_dotenv
 
 # .env をロード（他の import より前に実行）
 load_dotenv()
 
-from routers import users, pages, roadmap, chat_sessions   # noqa: E402
+from routers import users, pages, roadmap, chat_sessions, auth   # noqa: E402
 from database import engine, Base  # noqa: E402
 from exceptions import AppException  # noqa: E402
 
@@ -21,6 +22,7 @@ Base.metadata.create_all(bind=engine)
 
 # ===== FastAPI アプリ =====
 app = FastAPI()
+app.add_middleware(SessionMiddleware, secret_key="hcs-secret-key-2026")
 
 # パス設定
 BASE_DIR = Path(__file__).resolve().parent
@@ -29,6 +31,7 @@ BASE_DIR = Path(__file__).resolve().parent
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 # ルーター登録
+app.include_router(auth.router)
 app.include_router(pages.router)
 app.include_router(users.router,         prefix="/users", tags=["users"])
 app.include_router(roadmap.router)

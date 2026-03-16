@@ -136,18 +136,18 @@ class ProjectResponse(ProjectBase):
 # Roadmap（ロードマップ）
 # ══════════════════════════════════════════════
 class RoadmapStep(BaseModel):
-    step_number:       int
-    title:             str
-    description:       str
-    duration:          str
-    skills_to_acquire: List[str]
-    status:            str   # "completed" | "current" | "upcoming"
-    progress:          int   # 0〜100
+    step_number:       int              = 0
+    title:             str             = ""
+    description:       str             = ""
+    duration:          Optional[str]   = ""
+    skills_to_acquire: List[str]       = []
+    status:            str             = "upcoming"
+    progress:          int             = 0
 
 class RoadmapContent(BaseModel):
-    steps:                    List[RoadmapStep]
-    overall_progress:         int
-    estimated_total_duration: str
+    steps:                    List[RoadmapStep] = []
+    overall_progress:         int               = 0
+    estimated_total_duration: Optional[str]     = ""
 
 class RoadmapGenerateRequest(BaseModel):
     user_id:     int            = Field(..., example=1)

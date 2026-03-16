@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import traceback
 from datetime import datetime, timezone
 from typing import List, Optional
 
@@ -16,19 +17,25 @@ router = APIRouter(prefix="/api/roadmap", tags=["roadmap"])
 
 async def _get_ollama_model(client: httpx.AsyncClient, base_url: str) -> str:
     configured = os.getenv("OLLAMA_MODEL", "qwen2.5")
-    tags = await client.get(f"{base_url}/api/tags")
-    models = [m["name"] for m in tags.json().get("models", [])]
-    if not models:
+    try:
+        tags = await client.get(f"{base_url}/api/tags")
+        tags.raise_for_status()
+        model_list = [m["name"] for m in tags.json().get("models", [])]
+    except httpx.ConnectError:
+        raise HTTPException(status_code=503, detail="Ollamaに接続できません。Ollamaが起動しているか確認してください。")
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Ollamaモデル一覧の取得に失敗しました: {type(e).__name__}: {e}")
+    if not model_list:
         raise HTTPException(status_code=503, detail=f"Ollamaにモデルがありません。`ollama pull {configured}` を実行してください。")
-    for m in models:
+    for m in model_list:
         if m.startswith(configured.split(":")[0]):
             return m
-    return models[0]
+    return model_list[0]
 
 
 async def _call_ollama(prompt: str) -> str:
     base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    async with httpx.AsyncClient(timeout=120) as client:
+    async with httpx.AsyncClient(timeout=180) as client:
         model = await _get_ollama_model(client, base_url)
         resp = await client.post(
             f"{base_url}/api/chat",
@@ -52,7 +59,7 @@ async def _call_ollama(prompt: str) -> str:
             resp.raise_for_status()
             return resp.json().get("response", "").strip()
         resp.raise_for_status()
-    return resp.json()["message"]["content"].strip()
+        return resp.json()["message"]["content"].strip()
 
 
 # ══════════════════════════════════════════════
@@ -167,15 +174,25 @@ async def generate_roadmap(
 
     # ── Ollama API 呼び出し ──
     try:
-        raw   = await _call_ollama(prompt)
-        match = re.search(r'\{[\s\S]*\}', raw)
+        raw = await _call_ollama(prompt)
+        # JSONブロックを抽出（```json ... ``` も考慮）
+        match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', raw)
         if not match:
-            raise ValueError("JSONが見つかりませんでした")
-        raw = match.group()
-        json.loads(raw)   # バリデーション
-        content_json = raw
+            match = re.search(r'\{[\s\S]*\}', raw)
+        if not match:
+            raise ValueError(f"LLMがJSON形式で返しませんでした。応答の先頭: {raw[:300]}")
+        extracted = match.group(1) if match.lastindex else match.group()
+        parsed = json.loads(extracted)
+        # steps が無い場合はフォールバック
+        if "steps" not in parsed:
+            raise ValueError("LLMレスポンスに'steps'フィールドがありません")
+        content_json = json.dumps(parsed, ensure_ascii=False)
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"LLM生成エラー: {str(e)}")
+        tb = traceback.format_exc()
+        print(f"[roadmap] LLM error:\n{tb}")
+        raise HTTPException(status_code=500, detail=f"LLM生成エラー: {type(e).__name__}: {e}")
 
     # ── DB保存 ──
     roadmap = models.Roadmap(

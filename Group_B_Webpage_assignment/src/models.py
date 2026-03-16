@@ -11,12 +11,18 @@ from sqlalchemy import DateTime
 class User(Base):
     __tablename__ = "Users"
 
-    user_id      = Column(Integer, primary_key=True, index=True)
-    name         = Column(String(100), nullable=False)
-    email        = Column(String(255), unique=True, nullable=False)
-    password     = Column(String(255), nullable=True)   # ログインパスワード
-    current_role = Column(String(100), nullable=True)   # 現在ロール
-    target_role  = Column(String(100), nullable=True)   # 目標ロール
+    user_id          = Column(Integer, primary_key=True, index=True)
+    name             = Column(String(100), nullable=False)
+    email            = Column(String(255), unique=True, nullable=False)
+    password         = Column(String(255), nullable=True)
+    current_role     = Column(String(100), nullable=True)
+    target_role      = Column(String(100), nullable=True)
+    age              = Column(Integer,     nullable=True)             # 年齢
+    experience_years = Column(Integer,     nullable=True)             # 経験年数
+    available_from   = Column(String(50),  nullable=True)             # 稼働可能時期
+    work_locations   = Column(String(500), nullable=True)             # 勤務地（カンマ区切り）
+    desired_rate_min = Column(Integer,     nullable=True)             # 希望単価（下限）
+    desired_rate_max = Column(Integer,     nullable=True)             # 希望単価（上限）
 
     # リレーション
     user_skills      = relationship("UserSkill",     back_populates="user", cascade="all, delete-orphan")

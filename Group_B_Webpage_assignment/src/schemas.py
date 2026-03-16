@@ -73,18 +73,31 @@ class CareerHistoryResponse(CareerHistoryBase):
 class UserBase(BaseModel):
     name:         str           = Field(..., max_length=100, example="山田 太郎")
     email:        str           = Field(..., max_length=255, example="yamada@example.com")
-    current_role: Optional[str] = Field(None, max_length=100, example="インフラエンジニア")
-    target_role:  Optional[str] = Field(None, max_length=100, example="機械学習エンジニア")
+    current_role: Optional[str] = Field(None, max_length=100)
+    target_role:  Optional[str] = Field(None, max_length=100)
 
 class UserCreate(UserBase):
     pass
 
 class UserUpdate(BaseModel):
-    current_role: Optional[str] = Field(None, max_length=100)
-    target_role:  Optional[str] = Field(None, max_length=100)
+    current_role:     Optional[str] = None
+    target_role:      Optional[str] = None
+    name:             Optional[str] = None
+    age:              Optional[int] = None
+    experience_years: Optional[int] = None
+    available_from:   Optional[str] = None
+    work_locations:   Optional[str] = None
+    desired_rate_min: Optional[int] = None
+    desired_rate_max: Optional[int] = None
 
 class UserResponse(UserBase):
-    user_id: int
+    user_id:          int
+    age:              Optional[int] = None
+    experience_years: Optional[int] = None
+    available_from:   Optional[str] = None
+    work_locations:   Optional[str] = None
+    desired_rate_min: Optional[int] = None
+    desired_rate_max: Optional[int] = None
     class Config:
         from_attributes = True
 

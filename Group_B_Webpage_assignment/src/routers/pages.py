@@ -59,6 +59,19 @@ def read_roadmap(request: Request, db: Session = Depends(get_db)):
     })
 
 
+@router.get("/summary", response_class=HTMLResponse, tags=["pages"])
+def read_summary(request: Request, db: Session = Depends(get_db)):
+    """営業向けサマリー画面"""
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+    return templates.TemplateResponse("summary.html", {
+        "request":     request,
+        "active_page": "summary",
+        "user":        user,
+    })
+
+
 @router.get("/dashboard", response_class=HTMLResponse, tags=["pages"])
 def read_dashboard(request: Request, db: Session = Depends(get_db)):
     """ダッシュボード画面"""

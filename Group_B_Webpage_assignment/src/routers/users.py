@@ -34,10 +34,8 @@ def update_user(user_id: int, payload: schemas.UserUpdate, db: Session = Depends
     user = db.query(models.User).filter(models.User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if payload.current_role is not None:
-        user.current_role = payload.current_role
-    if payload.target_role is not None:
-        user.target_role = payload.target_role
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(user, field, value)
     db.commit()
     db.refresh(user)
     return user
